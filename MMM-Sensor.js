@@ -1,4 +1,4 @@
-Module.register("MMM-Template", {
+Module.register("MMM-Sensor", {
 
   defaults: {
     exampleContent: ""
@@ -11,17 +11,39 @@ Module.register("MMM-Template", {
     return ["template.css"]
   },
 
+  fetchSensorData() {
+    //Fetch data from sensor file
+    fetch(this.file('sensorData.json'))
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error: " + res.statusText)
+        }
+        else {
+          return res.json()
+        }
+      }).then((data) => {
+        this.temperature = data.temperature
+        this.humidity = data.humidity
+        this.updateDom()
+      })
+      .catch((error) => console.error(error))
+  },
+
   /**
    * Pseudo-constructor for our module. Initialize stuff here.
    */
   start() {
     this.templateContent = this.config.exampleContent
+    this.temperature = 0
+    this.humidity = 0
 
-    // set timeout for next random text
-    setInterval(() => this.addRandomText(), 3000)
+    this.fetchSensorData()
+
+    //Update measurements every second
+    setInterval(() => this.fetchSensorData(), 1000)
   },
 
-  /**
+  /** 
    * Handle notifications received by the node helper.
    * So we can communicate between the node helper and the module.
    *
@@ -40,7 +62,10 @@ Module.register("MMM-Template", {
    */
   getDom() {
     const wrapper = document.createElement("div")
-    wrapper.innerHTML = `<b>Title</b><br />${this.templateContent}`
+    wrapper.innerHTML = `<b>Title</b><br />
+        ${this.templateContent}<br />
+        Temperature: ${this.temperature}°C<br />
+        Humidity: ${this.humidity}%`;
 
     return wrapper
   },
