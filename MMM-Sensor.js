@@ -24,6 +24,17 @@ Module.register("MMM-Sensor", {
       }).then((data) => {
         this.temperature = data.temperature
         this.humidity = data.humidity
+        //Conditionally render calendar based on face detection
+        MM.getModules().withClass("calendar").enumerate((module) => {
+          //If faceDetected is true, show the calendar (and if it's already shown, don't do anything)
+          if (data.faceDetected && module.hidden) {
+            module.show(1000);
+          } 
+          //If faceDetected is false, hide the calendar (and if it's already hidden, don't do anything)
+          else if (!data.faceDetected && (!module.hidden || module.hidden === undefined)) {
+              module.hide(1000);
+          }
+        })
         this.updateDom()
       })
       .catch((error) => console.error(error))
@@ -39,8 +50,8 @@ Module.register("MMM-Sensor", {
 
     this.fetchSensorData()
 
-    //Update measurements every second
-    setInterval(() => this.fetchSensorData(), 1000)
+    //Update measurements every second, give 1 second to load
+    setTimeout(() => {setInterval(() => this.fetchSensorData(), 1000)}, 1000);
   },
 
   /** 
@@ -62,10 +73,9 @@ Module.register("MMM-Sensor", {
    */
   getDom() {
     const wrapper = document.createElement("div")
-    wrapper.innerHTML = `<b>Title</b><br />
-        ${this.templateContent}<br />
-        Temperature: ${this.temperature}°C<br />
-        Humidity: ${this.humidity}%`;
+    wrapper.innerHTML = `${this.templateContent}<br />
+        <i class="fa fa-temperature-half"></i> ${this.temperature}°C<br />
+        <i class="fa fa-tint"></i> ${this.humidity}%`;
 
     return wrapper
   },

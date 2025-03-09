@@ -1,3 +1,5 @@
-.MMM-Template div {
-    color: purple;
-}
+.MMM-Sensor {
+    font-size: 36px; /* Adjust image/icon size */
+    height: auto; /* Maintain aspect ratio */
+    color: white;
+}  
