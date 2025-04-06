@@ -21,18 +21,32 @@ Module.register("MMM-Sensor", {
         else {
           return res.json()
         }
-      }).then((data) => {
-        this.temperature = data.temperature
-        this.humidity = data.humidity
+      }).then((sensorData) => {
+        this.temperature = sensorData.temperature
+        this.humidity = sensorData.humidity
+        this.updateDom()
+      })
+      .catch((error) => console.error(error))
+
+    fetch(this.file('faceDetection.json'))
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error: " + res.statusText)
+        }
+        else {
+          return res.json()
+        }
+      }).then((faceData) => {
+        this.faceDetected = faceData.faceDetected
         //Conditionally render calendar based on face detection
         MM.getModules().withClass("calendar").enumerate((module) => {
           //If faceDetected is true, show the calendar (and if it's already shown, don't do anything)
-          if (data.faceDetected && module.hidden) {
-            module.show(1000);
-          } 
+          if (faceData.faceDetected && module.hidden) {
+            module.show(300);
+          }
           //If faceDetected is false, hide the calendar (and if it's already hidden, don't do anything)
-          else if (!data.faceDetected && (!module.hidden || module.hidden === undefined)) {
-              module.hide(1000);
+          else if (!faceData.faceDetected && (!module.hidden || module.hidden === undefined)) {
+            module.hide(300);
           }
         })
         this.updateDom()
@@ -47,11 +61,12 @@ Module.register("MMM-Sensor", {
     this.templateContent = this.config.exampleContent
     this.temperature = 0
     this.humidity = 0
+    this.faceDetected = false
 
     this.fetchSensorData()
 
     //Update measurements every second, give 1 second to load
-    setTimeout(() => {setInterval(() => this.fetchSensorData(), 1000)}, 1000);
+    setTimeout(() => { setInterval(() => this.fetchSensorData(), 1000) }, 1000);
   },
 
   /** 
